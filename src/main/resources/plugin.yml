@@ -1,6 +1,61 @@
+# The name of the plugin.
 name: ElyEco
-version: '0.1.0'
+# The version of the plugin. This will be automatically updated by the build process.
+version: '${project.version}'
+# The main class of the plugin.
 main: com.marrineer.elyEco.ElyEco
+# The API version this plugin is built against.
 api-version: '1.21'
-authors: [ Marrineer ]
+# The authors of the plugin.
+authors: [Marrineer]
+# The plugin's website.
 website: https://guns.lol/marrineer
+# A brief description of the plugin.
+description: A flexible and modern economy plugin for Paper servers.
+# The plugins that this plugin depends on.
+depend: [Vault]
+
+# Commands provided by the plugin.
+commands:
+  balance:
+    description: "Check your or another player's balance."
+    usage: "/balance [player]"
+    aliases: [bal, money]
+    permission: elyeco.balance
+  balancetop:
+    description: "Shows the players with the most money."
+    usage: "/balancetop"
+    aliases: [baltop]
+    permission: elyeco.balancetop
+  pay:
+    description: "Pay another player."
+    usage: "/pay <player> <amount>"
+    permission: elyeco.pay
+  elyeco:
+    description: "Admin commands for ElyEco."
+    usage: "/elyeco <reload|stats|...>"
+    aliases: [eco]
+    permission: elyeco.admin
+
+# Permissions used by the plugin.
+permissions:
+  elyeco.*:
+    description: "Gives access to all ElyEco commands."
+    children:
+      - elyeco.admin
+      - elyeco.balance.others
+  elyeco.admin:
+    description: "Allows access to the /elyeco admin command."
+    default: op
+  elyeco.balance:
+    description: "Allows a player to check their own balance."
+    default: true
+  elyeco.balance.others:
+    description: "Allows a player to check other players' balances."
+    default: op
+  elyeco.balancetop:
+    description: "Allows a player to see the balance leaderboard."
+    default: true
+  elyeco.pay:
+    description: "Allows a player to pay others."
+    default: true

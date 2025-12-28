@@ -2,55 +2,60 @@ package com.marrineer.elyEco.managers
 
 import com.marrineer.elyEco.ElyEco
 import com.marrineer.elyEco.data.ConfigManager
-import net.kyori.adventure.text.minimessage.MiniMessage
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import java.text.DecimalFormat
 
-@SuppressWarnings("unused")
-class TextManager(
-    private val plugin: ElyEco,
-    private val prefix: String
-) {
-    private val miniMessage: MiniMessage = MiniMessage.miniMessage()
+class TextManager(private val plugin: ElyEco) {
 
-    //===================== GET FROM FILE =====================//
-    public fun get(type: ConfigManager.FileType, placeholder: String) {
-        when (type) {
-            ConfigManager.FileType.CONFIG -> {
-                plugin.configManager.get(placeholder)
+    private val playerPlaceholders = mutableMapOf<String, (Player) -> Any>()
+    private val genericPlaceholders = mutableMapOf<String, () -> Any>()
+    private val numberFormat = DecimalFormat("#,##0.00")
+
+    init {
+        registerDefaultPlaceholders()
+    }
+
+    private fun registerDefaultPlaceholders() {
+        // Player-specific placeholders
+        registerPlayerPlaceholder("player_name") { it.name }
+        registerPlayerPlaceholder("balance") {
+            plugin.profileManager.getProfile(it)?.balance?.let { bal -> numberFormat.format(bal) } ?: "0.00"
+        }
+        registerPlayerPlaceholder("balance_raw") {
+            plugin.profileManager.getProfile(it)?.balance ?: 0.0
+        }
+
+        // Generic placeholders
+        registerGenericPlaceholder("currency_symbol") { ConfigManager.currencySymbol }
+    }
+
+    fun registerPlayerPlaceholder(key: String, resolver: (Player) -> Any) {
+        playerPlaceholders[key.lowercase()] = resolver
+    }
+
+    fun registerGenericPlaceholder(key: String, resolver: () -> Any) {
+        genericPlaceholders[key.lowercase()] = resolver
+    }
+
+    fun parse(text: String, player: Player? = null): String {
+        var result = text
+
+        // Process generic placeholders first
+        for ((key, resolver) in genericPlaceholders) {
+            if (result.contains("{$key}", ignoreCase = true)) {
+                result = result.replace("{$key}", resolver().toString(), ignoreCase = true)
             }
+        }
 
-            ConfigManager.FileType.MESSAGE -> {
-                plugin.messageManager.get(placeholder)
+        // Process player placeholders if a player context is available
+        if (player != null) {
+            for ((key, resolver) in playerPlaceholders) {
+                if (result.contains("{$key}", ignoreCase = true)) {
+                    result = result.replace("{$key}", resolver(player).toString(), ignoreCase = true)
+                }
             }
         }
-    }
 
-    //===================== SEND WITH PREFIX =====================//
-    public fun sendWithPrefixToSender(sender: CommandSender, text: String) {
-        sendToSender(
-            sender,
-            String.format("%s <reset>%s", prefix, text)
-        )
-    }
-
-    public fun sendWithPrefixToPlayer(player: Player, text: String) {
-        sendToPlayer(
-            player,
-            String.format("%s <reset>%s", prefix, text)
-        )
-    }
-
-    //===================== SEND ONLY =====================//
-    public fun sendToSender(sender: CommandSender, text: String) {
-        plugin.audience(sender).sendMessage {
-            miniMessage.deserialize(text)
-        }
-    }
-
-    public fun sendToPlayer(player: Player, text: String) {
-        plugin.audience(player).sendMessage {
-            miniMessage.deserialize(text)
-        }
+        return result
     }
 }

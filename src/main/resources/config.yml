@@ -1,28 +1,79 @@
-# ===============================
-# Global settings
-# ===============================
-global-prefix: "<b><gradient:#967289:#6B8AE0><shadow:#261D22:1>[</shadow><shadow:#241E26:1> </shadow><shadow:#221F2B:1>ᴇ</shadow><shadow:#1F212F:1>ʟ</shadow><shadow:#1D2234:1>ʏ</shadow></gradient><gradient:#6B8AE0:#C64D89><shadow:#1B2338:1>ᴇ</shadow><shadow:#211F33:1>ᴄ</shadow><shadow:#271B2D:1>ᴏ</shadow><shadow:#2C1728:1> </shadow><shadow:#321322:1>]</shadow></gradient></b>"
+# ElyEco Configuration File
+#
+# For help with MiniMessage format, see: https://docs.advntr.dev/minimessage/format.html
 
-# ===============================
-# Database configuration
-# ===============================
+# The prefix for all plugin messages.
+# Set to "" to disable.
+prefix: "<gray>[<gradient:#5e4fa2:#f79459>ElyEco</gradient>]</gray> "
+
+# Database settings
+# type: The type of database to use. Can be 'SQLite' or 'MySQL'.
+# fallback: If true, the plugin will attempt to fall back to SQLite if the MySQL connection fails.
 database:
-  # Database type: MYSQL or SQLITE
-  type: SQLITE
-
-  # ---------- MySQL ----------
-  MYSQL:
+  type: SQLite
+  fallback: true
+  
+  # Settings for MySQL. Only used if 'type' is set to 'MySQL'.
+  mysql:
     host: "localhost"
     port: 3306
-    dbname: "elyeco_db"
-    username: "elyeco"
+    database: "elyeco"
+    username: "user"
     password: "password"
-    use-ssl: true
+    use_ssl: false
+  
+  # Connection pool settings (HikariCP).
+  # It's recommended to keep these at their default values unless you know what you are doing.
+  pool_settings:
+    maximum_pool_size: 10
+    minimum_idle: 5
+    idle_timeout: 30000 # 30 seconds
+    connection_timeout: 30000 # 30 seconds
+    max_lifetime: 1800000 # 30 minutes
 
-  # ---------- SQLite ----------
-  SQLITE:
-    database-file: "elyeco.db"
+# Economy settings
+economy:
+  starting_balance: 100.0
+  currency_symbol: "$"
+  # {symbol} - The currency symbol. {amount} - The amount of money.
+  format: "{symbol}{amount}"
+  
+# General plugin settings
+settings:
+  # How often (in seconds) the cache should be saved to the database.
+  cache_flush_interval: 300 # 5 minutes
+  # Enable debug messages in the console.
+  debug_logging: false
 
-starting-balance: 100
+# All user-facing messages.
+messages:
+  # General error messages
+  error:
+    no_permission: "<red>You don't have permission to do that.</red>"
+    player_not_found: "<red>Player not found: {player}.</red>"
+    console_not_supported: "<red>This command cannot be run from the console.</red>"
+    invalid_amount: "<red>Invalid amount specified.</red>"
+    
+  # /balance command
+  balance:
+    self: "<gray>Your balance: <green>{balance}</green></gray>"
+    other: "<gray>{player}'s balance: <green>{balance}</green></gray>"
 
-fractional-digits: 2
+  # /pay command
+  pay:
+    success_sender: "<gray>You sent <green>{amount}</green> to <white>{recipient}</white>.</gray>"
+    success_recipient: "<gray>You received <green>{amount}</green> from <white>{sender}</white>.</gray>"
+    not_enough_money: "<red>You don't have enough money.</red>"
+    cannot_pay_self: "<red>You cannot pay yourself.</red>"
+
+  # /balancetop command
+  balancetop:
+    header: "<dark_gray>--- <gold>Top Balances</gold> ---</dark_gray>"
+    format: "<gray>{rank}. <white>{player}</white> - <green>{balance}</green>"
+    footer: "<dark_gray>--------------------</dark_gray>"
+
+  # /elyeco admin command
+  admin:
+    reload_success: "<green>ElyEco configuration and messages have been reloaded.</green>"
+    reload_fail: "<red>Failed to reload configuration. Check the console for errors.</red>"
+    stats_format: "<gray>Player <white>{player}</white> | Balance: <green>{balance}</green></gray>"

@@ -41,3 +41,5 @@ Thumbs.db
 # Env / Secrets
 # ===============================
 .env
+*.prompt
+dependency-reduced-pom.xml

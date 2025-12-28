@@ -4,7 +4,8 @@ import java.util.*
 
 data class PlayerStats(
     val uuid: UUID,
+    var username: String,
     var balance: Double,
-    val createdAt: Long,
-    var updatedAt: Long
+    val firstSeen: Long,
+    var lastSeen: Long
 )

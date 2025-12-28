@@ -1,71 +1,120 @@
 package com.marrineer.elyEco
 
+import com.marrineer.elyEco.commands.BalanceCommand
+import com.marrineer.elyEco.commands.BalanceTopCommand
+import com.marrineer.elyEco.commands.ElyEcoCommand
+import com.marrineer.elyEco.commands.PayCommand
 import com.marrineer.elyEco.data.ConfigManager
 import com.marrineer.elyEco.data.DatabaseManager
-import com.marrineer.elyEco.economy.Economy
+import com.marrineer.elyEco.economy.ElyEcoEconomy
+import com.marrineer.elyEco.listeners.PlayerConnectionListener
 import com.marrineer.elyEco.managers.MessageManager
+import com.marrineer.elyEco.managers.ProfileManager
 import com.marrineer.elyEco.managers.TextManager
-import net.kyori.adventure.audience.Audience
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
-import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.FileConfiguration
-import org.bukkit.entity.Player
+import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.logging.Level
 
 class ElyEco : JavaPlugin() {
-    lateinit var adventure: BukkitAudiences
-    lateinit var configManager: ConfigManager
-    lateinit var textManager: TextManager
-    lateinit var messageManager: MessageManager
+
+    lateinit var audiences: BukkitAudiences
+        private set
     lateinit var databaseManager: DatabaseManager
+        private set
+    lateinit var profileManager: ProfileManager
+        private set
+    lateinit var textManager: TextManager
+        private set
+    lateinit var messageManager: MessageManager
+        private set
+    lateinit var economy: Economy
+        private set
 
     override fun onEnable() {
-        adventure = BukkitAudiences.create(this)
-        configManager = ConfigManager(this)
-        textManager = TextManager(this, configManager.prefix)
-        MessageManager.init(this)
-        databaseManager = DatabaseManager(this, configManager)
+        val startTime = System.currentTimeMillis()
 
-        try {
-            databaseManager.initialize()
-        } catch (ignore: Exception) {
-            logger.log(Level.SEVERE, "Failed to connect to database! Disabling plugin...", ignore)
+        // Initialize Adventure
+        audiences = BukkitAudiences.create(this)
+
+        // Load configurations
+        logger.info("Loading configuration...")
+        ConfigManager.load(this)
+
+        // Initialize managers and services
+        logger.info("Initializing services...")
+        if (!setupServices()) {
             server.pluginManager.disablePlugin(this)
             return
         }
-        if (server.pluginManager.getPlugin("Vault") != null) {
-            setupEconomy()
-        } else {
-            logger.warning("Vault not found! Economy features will be disabled.")
-            server.pluginManager.disablePlugin(this)
-        }
+
+        // Register listeners and commands
+        registerListeners()
+        registerCommands()
+
+        // Start background tasks
+        profileManager.startSaveTask()
+
+        // Load data for any players who were already online (e.g., during a /reload)
+        profileManager.loadAllOnlinePlayers()
+
+        val endTime = System.currentTimeMillis()
+        logger.info("ElyEco has been enabled successfully in ${endTime - startTime}ms.")
     }
 
     override fun onDisable() {
-        adventure.close()
+        logger.info("Disabling ElyEco...")
+
+        // Save all pending data synchronously before shutting down
+        logger.info("Saving all player data...")
+        runBlocking(Dispatchers.IO) {
+            profileManager.saveAllDirtyProfiles()
+        }
+
+        // Shutdown database connections
+        databaseManager.shutdown()
+
+        // Close Adventure audiences
+        audiences.close()
+
+        logger.info("ElyEco has been disabled.")
     }
 
-    fun audience(player: Player): Audience {
-        return adventure.player(player)
-    }
+    private fun setupServices(): Boolean {
+        databaseManager = DatabaseManager(this)
+        databaseManager.initialize()
 
-    fun audience(sender: CommandSender): Audience {
-        return adventure.sender(sender)
-    }
+        profileManager = ProfileManager(this, databaseManager)
+        textManager = TextManager(this)
+        messageManager = MessageManager(this, textManager)
 
-    fun getConfigManager(): FileConfiguration {
-        return configManager.config
-    }
-    private fun setupEconomy() {
-        val implementer = Economy(this)
+        // Check for Vault and register Economy
+        if (server.pluginManager.getPlugin("Vault") == null) {
+            logger.severe("Vault not found! ElyEco requires Vault to function.")
+            return false
+        }
+        economy = ElyEcoEconomy(profileManager)
         server.servicesManager.register(
-            net.milkbowl.vault.economy.Economy::class.java,
-            implementer,
-            this,
-            ServicePriority.Highest
+            Economy::class.java,
+            economy, this,
+            ServicePriority.Normal
         )
-        logger.info("Hooked into Vault Economy successfully.")
+        logger.info("Vault hook established.")
+        return true
+    }
+
+    private fun registerListeners() {
+        server.pluginManager.registerEvents(PlayerConnectionListener(this), this)
+        logger.info("Registered event listeners.")
+    }
+
+    private fun registerCommands() {
+        getCommand("elyeco")?.setExecutor(ElyEcoCommand(this))
+        getCommand("balance")?.setExecutor(BalanceCommand(this))
+        getCommand("pay")?.setExecutor(PayCommand(this))
+        getCommand("balancetop")?.setExecutor(BalanceTopCommand(this))
+        logger.info("Registered commands.")
     }
 }
