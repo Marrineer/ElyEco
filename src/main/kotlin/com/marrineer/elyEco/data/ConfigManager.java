@@ -31,6 +31,14 @@ public class ConfigManager {
         return config.getString("global-prefix", "");
     }
 
+    public String getDatabaseType() {
+        return config.getString("database.type", "SQLITE");
+    }
+
+    public double getStartingBalance() {
+        return config.getDouble("starting-balance", 100.0);
+    }
+
     public MySQLProfile getMySQLProfile() {
         ConfigurationSection section = Objects.requireNonNull(config.getConfigurationSection("database.MYSQL"));
         return new MySQLProfile(

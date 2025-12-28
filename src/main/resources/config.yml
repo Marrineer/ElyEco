@@ -22,3 +22,7 @@ database:
   # ---------- SQLite ----------
   SQLITE:
     database-file: "elyeco.db"
+
+starting-balance: 100
+
+fractional-digits: 2
