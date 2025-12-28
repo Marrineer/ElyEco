@@ -1,0 +1,24 @@
+# ===============================
+# Global settings
+# ===============================
+global-prefix: "&7[&bElyEco&7] "
+
+# ===============================
+# Database configuration
+# ===============================
+database:
+  # Database type: MYSQL or SQLITE
+  type: SQLITE
+
+  # ---------- MySQL ----------
+  MYSQL:
+    host: "localhost"
+    port: 3306
+    dbname: "elyeco_db"
+    username: "elyeco"
+    password: "password"
+    use-ssl: true
+
+  # ---------- SQLite ----------
+  SQLITE:
+    database-file: "elyeco.db"

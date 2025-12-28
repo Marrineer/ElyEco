@@ -1,0 +1,6 @@
+name: ElyEco
+version: '0.1.0'
+main: com.marrineer.elyEco.ElyEco
+api-version: '1.21'
+authors: [ Marrineer ]
+website: https://guns.lol/marrineer
