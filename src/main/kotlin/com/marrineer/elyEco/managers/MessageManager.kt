@@ -16,14 +16,15 @@ object MessageManager {
     fun init(plugin: ElyEco) {
         this.plugin = plugin
         file = File(plugin.dataFolder, "messages.yml")
-        if(!file.exists()) {
+        if (!file.exists()) {
             plugin.saveResource("messages.yml", false)
         }
         reloadMessage()
     }
+
     public fun reloadMessage() {
         message = YamlConfiguration.loadConfiguration(file)
-         defaultMessage = YamlConfiguration.loadConfiguration(
+        defaultMessage = YamlConfiguration.loadConfiguration(
             InputStreamReader(
                 plugin.getResource("messages.yml")!!,
                 StandardCharsets.UTF_8

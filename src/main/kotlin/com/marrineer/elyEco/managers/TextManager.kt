@@ -1,8 +1,7 @@
-package com.marrineer.elyEco.utils
+package com.marrineer.elyEco.managers
 
 import com.marrineer.elyEco.ElyEco
 import com.marrineer.elyEco.data.ConfigManager
-import com.marrineer.elyEco.managers.MessageManager
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -20,6 +19,7 @@ class TextManager(
             ConfigManager.FileType.CONFIG -> {
                 plugin.configManager.get(placeholder)
             }
+
             ConfigManager.FileType.MESSAGE -> {
                 plugin.messageManager.get(placeholder)
             }
@@ -33,6 +33,7 @@ class TextManager(
             String.format("%s %s", prefix, text)
         )
     }
+
     public fun sendWithPrefixToPlayer(player: Player, text: String) {
         sendToPlayer(
             player,
@@ -46,6 +47,7 @@ class TextManager(
             miniMessage.deserialize(text)
         }
     }
+
     public fun sendToPlayer(player: Player, text: String) {
         plugin.audience(player).sendMessage {
             miniMessage.deserialize(text)
