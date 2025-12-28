@@ -30,14 +30,14 @@ class TextManager(
     public fun sendWithPrefixToSender(sender: CommandSender, text: String) {
         sendToSender(
             sender,
-            String.format("%s %s", prefix, text)
+            String.format("%s <reset>%s", prefix, text)
         )
     }
 
     public fun sendWithPrefixToPlayer(player: Player, text: String) {
         sendToPlayer(
             player,
-            String.format("%s %s", prefix, text)
+            String.format("%s <reset>%s", prefix, text)
         )
     }
 
