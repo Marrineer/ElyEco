@@ -1,7 +1,7 @@
 # ===============================
 # Global settings
 # ===============================
-global-prefix: "&7[&bElyEco&7] "
+global-prefix: "<b><gradient:#967289:#6B8AE0><shadow:#261D22:1>[</shadow><shadow:#241E26:1> </shadow><shadow:#221F2B:1>ᴇ</shadow><shadow:#1F212F:1>ʟ</shadow><shadow:#1D2234:1>ʏ</shadow></gradient><gradient:#6B8AE0:#C64D89><shadow:#1B2338:1>ᴇ</shadow><shadow:#211F33:1>ᴄ</shadow><shadow:#271B2D:1>ᴏ</shadow><shadow:#2C1728:1> </shadow><shadow:#321322:1>]</shadow></gradient></b>"
 
 # ===============================
 # Database configuration
